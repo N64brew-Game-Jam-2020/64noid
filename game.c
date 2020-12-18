@@ -290,7 +290,7 @@ static bool CheckBallSizeExist(int size)
 static int GetPowerupType()
 {
 	int base_type = rand() % POWERUP_COUNT;
-	if(base_type == POWERUP_LASER  && paddle.laser) {
+	if(base_type == POWERUP_LASER && (paddle.laser || game_globals.edit_mode)) {
 		return -1;
 	}
 	if(base_type == POWERUP_ENLARGE && paddle.type == PADDLE_TYPE_LONG) {
@@ -373,7 +373,12 @@ static int GetBrickWorth(MapBrick *brick)
 			return 0;
 		
 		case BRICK_ROCK1:
-			return (50*(game_globals.map_num+1));
+			if(game_globals.edit_mode) {
+				return 100;
+			} else {
+				return (50*(game_globals.map_num+1));
+			}
+			
 			
 		default:
 			return 50+(10*(brick->type-BRICK_START));
@@ -493,9 +498,6 @@ static void UpdateBalls()
 							if (game_globals.edit_mode) {
 								SetNextStage(STAGE_MAPEDITOR);
 							} else {
-								if(game_globals.update_high_score) {
-									SaveWrite();
-								}
 								SetNextStage(STAGE_END);
 							}
 						}
@@ -595,9 +597,6 @@ static void UpdatePaddle()
 static void AdvanceLevel()
 {
 	if(game_globals.map_num == num_maps-1) {
-		if(game_globals.update_high_score) {
-			SaveWrite();
-		}
 		SetNextStage(STAGE_END);
 	} else {
 		SetNextStage(STAGE_NEXTMAP);
@@ -789,9 +788,6 @@ void StageGameUpdate()
 				SetNextStage(STAGE_MAPEDITOR);
 			} else {
 				if(game_globals.map_num == num_maps-1) {
-					if(game_globals.update_high_score) {
-						SaveWrite();
-					}
 					SetNextStage(STAGE_END);
 				} else {
 					SetNextStage(STAGE_NEXTMAP);
